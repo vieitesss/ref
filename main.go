@@ -6,6 +6,8 @@ import (
 	"github.com/gocolly/colly"
 )
 
+var references []string
+
 func main() {
 	c := colly.NewCollector(
 		colly.AllowedDomains("quickref.me"),
@@ -15,12 +17,17 @@ func main() {
 		fmt.Println("Something went wrong: ", err)
 	})
 
-	c.OnHTML("h2", func(e *colly.HTMLElement) {
-		fmt.Printf("h2: %v\n", e.Text)
+	c.OnHTML("h2.font-medium", func(e *colly.HTMLElement) {
+		as := e.DOM.NextAllFiltered("div + div.grid").First().ChildrenFiltered("a").EachIter()
+
+		for _, a := range as {
+			val, _ := a.Attr("href")
+			references = append(references, val)
+		}
 	})
 
 	c.OnScraped(func(_ *colly.Response) {
-		fmt.Println("scraped!")
+		fmt.Println(references)
 	})
 
 	c.Visit("https://quickref.me")
