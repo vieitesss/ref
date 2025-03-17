@@ -4,8 +4,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/londek/reactea"
 	"github.com/londek/reactea/router"
-	"github.com/vieitesss/ref/pages/displayname"
-	"github.com/vieitesss/ref/pages/input"
+	"github.com/vieitesss/ref/pages/section"
 )
 
 type Component struct {
@@ -26,17 +25,15 @@ func New() *Component {
 func (c *Component) Init(reactea.NoProps) tea.Cmd {
 	return c.mainRouter.Init(map[string]router.RouteInitializer{
 		"default": func(router.Params) (reactea.SomeComponent, tea.Cmd) {
-			component := input.New()
+			component := section.New()
 
-			return component, component.Init(input.Props{
-				SetText: c.setText,
-			})
+			return component, component.Init(section.Props{})
 		},
-		"/displayname": func(router.Params) (reactea.SomeComponent, tea.Cmd) {
-			component := reactea.Componentify[string](displayname.Renderer)
-
-			return component, component.Init(c.text)
-		},
+		// "/displayname": func(router.Params) (reactea.SomeComponent, tea.Cmd) {
+		// 	component := reactea.Componentify[string](displayname.Renderer)
+		//
+		// 	return component, component.Init(c.text)
+		// },
 	})
 }
 
@@ -53,8 +50,4 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 
 func (c *Component) Render(width, height int) string {
 	return c.mainRouter.Render(width, height)
-}
-
-func (c *Component) setText(text string) {
-	c.text = text
 }
