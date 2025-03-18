@@ -2,23 +2,15 @@ package scraper
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gocolly/colly"
 )
 
+type Section string
+type Reference string
+
 var c *colly.Collector
-
-type Section struct {
-	Name       string
-	References []string
-}
-
-func NewSection(name string, references []string) Section {
-	return Section{
-		Name:       name,
-		References: references,
-	}
-}
 
 func Scrapper() *colly.Collector {
 	if c != nil {
@@ -26,6 +18,7 @@ func Scrapper() *colly.Collector {
 	}
 
 	c = colly.NewCollector(colly.AllowedDomains("quickref.me"))
+	c.AllowURLRevisit = true
 
 	c.OnError(func(_ *colly.Response, err error) {
 		fmt.Println("Something went wrong: ", err)
@@ -36,16 +29,9 @@ func Scrapper() *colly.Collector {
 
 func GetSections() []Section {
 	var sections []Section
+
 	Scrapper().OnHTML("h2.font-medium", func(e *colly.HTMLElement) {
-		as := e.DOM.NextAllFiltered("div + div.grid").First().ChildrenFiltered("a").EachIter()
-
-		var references []string
-		for _, a := range as {
-			val, _ := a.Attr("href")
-			references = append(references, val)
-		}
-
-		sections = append(sections, NewSection(e.Text, references))
+		sections = append(sections, Section(e.Text))
 	})
 
 	Scrapper().Visit("https://quickref.me")
@@ -53,7 +39,28 @@ func GetSections() []Section {
 	return sections
 }
 
-func GetSectionRef(section string) []string {
+func GetSectionReferences(section string) []Reference {
+	var references []Reference
+
+	Scrapper().OnHTML("h2.font-medium", func(e *colly.HTMLElement) {
+		if section != e.Text {
+			return
+		}
+
+		as := e.DOM.NextAllFiltered("div + div.grid").First().ChildrenFiltered("a").EachIter()
+
+		for _, a := range as {
+			val, _ := a.Attr("href")
+			references = append(references, Reference(strings.Replace(val, "/", "", 1)))
+		}
+	})
+
+	Scrapper().Visit("https://quickref.me")
+
+	return references
+}
+
+func GetReference(reference string) []string {
 	var refTitles []string
 
 	Scrapper().OnHTML(".h2-wrap", func(e *colly.HTMLElement) {
@@ -61,7 +68,7 @@ func GetSectionRef(section string) []string {
 		refTitles = append(refTitles, title)
 	})
 
-	Scrapper().Visit(fmt.Sprintf("https://quickref.me%s", section))
+	Scrapper().Visit(fmt.Sprintf("https://quickref.me/%s", reference))
 
 	return refTitles
 }

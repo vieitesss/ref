@@ -1,6 +1,8 @@
-package section
+package references
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/vieitesss/ref/scraper"
 )
@@ -15,7 +17,7 @@ func (i item) Title() string       { return i.name }
 func (i item) Description() string { return "" }
 func (i item) FilterValue() string { return i.name }
 
-func NewList(elems []scraper.Section) list.Model {
+func NewList(section string, elems []scraper.Reference) list.Model {
 	var items []list.Item
 	for _, e := range elems {
 		items = append(items, item{name: string(e)})
@@ -26,7 +28,7 @@ func NewList(elems []scraper.Section) list.Model {
 	delegate.SetSpacing(0)
 
 	l := list.New(items, delegate, HEIGHT, len(items) + 7)
-	l.Title = "Sections"
+	l.Title = fmt.Sprintf("%s", section)
 
 	return l
 }

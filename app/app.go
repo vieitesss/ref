@@ -4,6 +4,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/londek/reactea"
 	"github.com/londek/reactea/router"
+	"github.com/vieitesss/ref/pages/references"
 	"github.com/vieitesss/ref/pages/section"
 )
 
@@ -17,7 +18,7 @@ type Component struct {
 }
 
 func New() *Component {
-	return &Component {
+	return &Component{
 		mainRouter: router.New(),
 	}
 }
@@ -28,6 +29,11 @@ func (c *Component) Init(reactea.NoProps) tea.Cmd {
 			component := section.New()
 
 			return component, component.Init(section.Props{})
+		},
+		":sec/references": func(par router.Params) (reactea.SomeComponent, tea.Cmd) {
+			component := references.New()
+			sec := par["sec"]
+			return component, component.Init(references.Props{Section: sec})
 		},
 		// "/displayname": func(router.Params) (reactea.SomeComponent, tea.Cmd) {
 		// 	component := reactea.Componentify[string](displayname.Renderer)

@@ -1,8 +1,6 @@
-package section
+package references
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -10,46 +8,53 @@ import (
 	"github.com/vieitesss/ref/scraper"
 )
 
-type Props struct{}
+type Props struct {
+	Section string
+}
 
 type Component struct {
 	reactea.BasicComponent
 	reactea.BasicPropfulComponent[Props]
 
-	list     list.Model
-	sections []scraper.Section
+	list       list.Model
+	references []scraper.Reference
 }
+
+type referencesMsg []scraper.Reference
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
 func (c *Component) Init(props Props) tea.Cmd {
 	c.UpdateProps(props)
 
-	return nil
+	return getSectionReferencesCmd(props.Section)
 }
 
 func New() *Component {
-	sections := scraper.GetSections()
+	return &Component{}
+}
 
-	c := &Component{
-		list:     NewList(sections),
-		sections: sections,
+func getSectionReferencesCmd(section string) tea.Cmd {
+	return func() tea.Msg {
+		refs := scraper.GetSectionReferences(section)
+		return referencesMsg(refs)
 	}
-
-	return c
 }
 
 func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
+	case referencesMsg:
+		c.references = []scraper.Reference(msg)
+		c.list = NewList(c.Props().Section, c.references)
 	case tea.WindowSizeMsg:
 		UpdateSize(&c.list, msg.Width, msg.Height)
-	case tea.KeyMsg:
-		if msg.Type == tea.KeyEnter {
-			selected := c.list.SelectedItem().FilterValue()
-			reactea.SetCurrentRoute(fmt.Sprintf("%s/references", selected))
-
-			return nil
-		}
+		// case tea.KeyMsg:
+		// 	if msg.Type == tea.KeyEnter {
+		// 		// Lifted state power! Woohooo
+		// 		reactea.SetCurrentRoute("/displayname")
+		//
+		// 		return nil
+		// 	}
 	}
 
 	var cmd tea.Cmd

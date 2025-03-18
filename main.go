@@ -2,9 +2,8 @@ package main
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/vieitesss/ref/app"
-
 	"github.com/londek/reactea"
+	"github.com/vieitesss/ref/app"
 )
 
 func main() {
