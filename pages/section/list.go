@@ -26,6 +26,8 @@ func NewList(elems []scraper.Section) list.Model {
 	delegate.SetSpacing(0)
 
 	l := list.New(items, delegate, HEIGHT, len(items) + 7)
+	l.KeyMap.ShowFullHelp.SetEnabled(false)
+	l.KeyMap.ShowFullHelp.Unbind()
 	l.Title = "Sections"
 
 	return l

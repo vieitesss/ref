@@ -3,6 +3,7 @@ package references
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -64,7 +65,12 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 		c.loading = false
 	case tea.WindowSizeMsg:
 		UpdateSize(&c.list, msg.Width, msg.Height)
-		// case tea.KeyMsg:
+	case tea.KeyMsg:
+		if key.Matches(msg, BackKey) {
+			reactea.SetCurrentRoute("default")
+
+			return nil
+		}
 		// 	if msg.Type == tea.KeyEnter {
 		// 		// Lifted state power! Woohooo
 		// 		reactea.SetCurrentRoute("/displayname")
