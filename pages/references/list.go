@@ -8,7 +8,8 @@ import (
 	"github.com/vieitesss/ref/scraper"
 )
 
-const HEIGHT = 20
+const WIDTH = 20
+const HEIGHT = 50
 
 type item struct {
 	name string
@@ -16,7 +17,7 @@ type item struct {
 
 var BackKey = key.NewBinding(
 	key.WithKeys("backspace", "b"),
-	key.WithHelp("󰭜/b", "Back to sections"),
+	key.WithHelp("󰭜/b", "back"),
 )
 
 func (i item) Title() string       { return i.name }
@@ -37,7 +38,7 @@ func NewList(section string, elems []scraper.Reference) list.Model {
 	delegate.ShowDescription = false
 	delegate.SetSpacing(0)
 
-	l := list.New(items, delegate, HEIGHT, len(items)+7)
+	l := list.New(items, delegate, WIDTH, min(len(items)+7, HEIGHT))
 	l.Title = fmt.Sprintf("%s", section)
 	l.AdditionalShortHelpKeys = customBindings
 	l.KeyMap.ShowFullHelp.SetEnabled(false)

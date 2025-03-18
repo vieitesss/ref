@@ -5,7 +5,8 @@ import (
 	"github.com/vieitesss/ref/scraper"
 )
 
-const HEIGHT = 20
+const WIDTH = 20
+const HEIGHT = 50
 
 type item struct {
 	name string
@@ -25,9 +26,8 @@ func NewList(elems []scraper.Section) list.Model {
 	delegate.ShowDescription = false
 	delegate.SetSpacing(0)
 
-	l := list.New(items, delegate, HEIGHT, len(items) + 7)
+	l := list.New(items, delegate, WIDTH, min(len(items) + 7, HEIGHT))
 	l.KeyMap.ShowFullHelp.SetEnabled(false)
-	l.KeyMap.ShowFullHelp.Unbind()
 	l.Title = "Sections"
 
 	return l
