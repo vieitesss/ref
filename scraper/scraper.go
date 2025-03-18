@@ -60,15 +60,15 @@ func GetSectionReferences(section string) []Reference {
 	return references
 }
 
-func GetReference(reference string) []string {
-	var refTitles []string
+func GetCheatSheet(reference string) []string {
+	var cheatTitles []string
 
 	Scrapper().OnHTML(".h2-wrap", func(e *colly.HTMLElement) {
 		title := e.DOM.ChildrenFiltered("h2").Text()
-		refTitles = append(refTitles, title)
+		cheatTitles = append(cheatTitles, title)
 	})
 
 	Scrapper().Visit(fmt.Sprintf("https://quickref.me/%s", reference))
 
-	return refTitles
+	return cheatTitles
 }

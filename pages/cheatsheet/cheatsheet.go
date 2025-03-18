@@ -1,4 +1,4 @@
-package references
+package cheatsheet
 
 import (
 	"fmt"
@@ -13,20 +13,21 @@ import (
 )
 
 type Props struct {
-	Section string
+	Section   string
+	Reference string
 }
 
 type Component struct {
 	reactea.BasicComponent
 	reactea.BasicPropfulComponent[Props]
 
-	loading    bool
-	spinner    spinner.Model
-	list       list.Model
-	references []scraper.Reference
+	loading bool
+	spinner spinner.Model
+	list    list.Model
+	titles  []string
 }
 
-type referencesMsg []scraper.Reference
+type titleMsg []string
 
 var (
 	docStyle     = lipgloss.NewStyle().Margin(1, 2)
@@ -36,7 +37,7 @@ var (
 func (c *Component) Init(props Props) tea.Cmd {
 	c.UpdateProps(props)
 
-	return getSectionReferencesCmd(props.Section)
+	return getReferenceCheatsheetTitlesCmd(props.Reference)
 }
 
 func New() *Component {
@@ -50,36 +51,27 @@ func New() *Component {
 	}
 }
 
-func getSectionReferencesCmd(section string) tea.Cmd {
+func getReferenceCheatsheetTitlesCmd(ref string) tea.Cmd {
 	return func() tea.Msg {
-		refs := scraper.GetSectionReferences(section)
-		return referencesMsg(refs)
+		titles := scraper.GetCheatSheet(ref)
+		return titleMsg(titles)
 	}
 }
 
 func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
-	case referencesMsg:
-		c.references = []scraper.Reference(msg)
-		c.list = NewList(c.Props().Section, c.references)
+	case titleMsg:
+		c.titles = []string(msg)
+		c.list = NewList(c.Props().Reference, c.titles)
 		c.loading = false
 
 	case tea.WindowSizeMsg:
 		UpdateSize(&c.list, msg.Width, msg.Height)
 
 	case tea.KeyMsg:
-		if c.list.SettingFilter() {
-			break
-		}
-
 		if key.Matches(msg, BackKey) {
-			reactea.SetCurrentRoute("default")
-			return nil
-		}
+			reactea.SetCurrentRoute(fmt.Sprintf("%s/references", c.Props().Section))
 
-		if msg.Type == tea.KeyEnter {
-			selected := c.list.SelectedItem().FilterValue()
-			reactea.SetCurrentRoute(fmt.Sprintf("%s/references/%s", c.Props().Section, selected))
 			return nil
 		}
 	}
@@ -94,7 +86,7 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 
 func (c *Component) Render(int, int) string {
 	if c.loading {
-		return fmt.Sprintf("%v Getting %s references", c.spinner.View(), c.Props().Section)
+		return fmt.Sprintf("%v Getting %s cheatsheet", c.spinner.View(), c.Props().Section)
 	}
 
 	return docStyle.Render(c.list.View())

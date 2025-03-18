@@ -60,13 +60,18 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 		c.sections = []scraper.Section(msg)
 		c.list = NewList(c.sections)
 		c.loading = false
+
 	case tea.WindowSizeMsg:
 		UpdateSize(&c.list, msg.Width, msg.Height)
+
 	case tea.KeyMsg:
+		if c.list.SettingFilter() {
+			break
+		}
+
 		if msg.Type == tea.KeyEnter {
 			selected := c.list.SelectedItem().FilterValue()
 			reactea.SetCurrentRoute(fmt.Sprintf("%s/references", selected))
-
 			return nil
 		}
 	}

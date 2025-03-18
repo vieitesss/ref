@@ -5,6 +5,7 @@ import (
 	"github.com/londek/reactea"
 	"github.com/londek/reactea/router"
 	"github.com/vieitesss/ref/pages/references"
+	"github.com/vieitesss/ref/pages/cheatsheet"
 	"github.com/vieitesss/ref/pages/section"
 )
 
@@ -33,13 +34,19 @@ func (c *Component) Init(reactea.NoProps) tea.Cmd {
 		":sec/references": func(par router.Params) (reactea.SomeComponent, tea.Cmd) {
 			component := references.New()
 			sec := par["sec"]
+
 			return component, component.Init(references.Props{Section: sec})
 		},
-		// "/displayname": func(router.Params) (reactea.SomeComponent, tea.Cmd) {
-		// 	component := reactea.Componentify[string](displayname.Renderer)
-		//
-		// 	return component, component.Init(c.text)
-		// },
+		":sec/references/:ref": func(par router.Params) (reactea.SomeComponent, tea.Cmd) {
+			component := cheatsheet.New()
+			sec := par["sec"]
+			ref := par["ref"]
+
+			return component, component.Init(cheatsheet.Props{
+				Section: sec,
+				Reference: ref,
+			})
+		},
 	})
 }
 
