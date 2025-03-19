@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/londek/reactea"
 	"github.com/vieitesss/ref/scraper"
+	l "github.com/vieitesss/ref/components/list"
 )
 
 type Props struct{}
@@ -58,11 +59,11 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case sectionsMsg:
 		c.sections = []scraper.Section(msg)
-		c.list = NewList(c.sections)
+		c.list = l.NewSectionsList("Sections", c.sections)
 		c.loading = false
 
 	case tea.WindowSizeMsg:
-		UpdateSize(&c.list, msg.Width, msg.Height)
+		l.UpdateSize(&c.list, msg.Width, msg.Height)
 
 	case tea.KeyMsg:
 		if c.list.SettingFilter() {

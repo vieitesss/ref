@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/londek/reactea"
 	"github.com/vieitesss/ref/scraper"
+	l "github.com/vieitesss/ref/components/list"
 )
 
 type Props struct {
@@ -62,14 +63,14 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case titleMsg:
 		c.titles = []string(msg)
-		c.list = NewList(c.Props().Reference, c.titles)
+		c.list = l.NewCheatsheetList(c.Props().Reference, c.titles)
 		c.loading = false
 
 	case tea.WindowSizeMsg:
-		UpdateSize(&c.list, msg.Width, msg.Height)
+		l.UpdateSize(&c.list, msg.Width, msg.Height)
 
 	case tea.KeyMsg:
-		if key.Matches(msg, BackKey) {
+		if key.Matches(msg, l.BackKey) {
 			reactea.SetCurrentRoute(fmt.Sprintf("%s/references", c.Props().Section))
 
 			return nil

@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/londek/reactea"
 	"github.com/vieitesss/ref/scraper"
+	l "github.com/vieitesss/ref/components/list"
 )
 
 type Props struct {
@@ -61,18 +62,18 @@ func (c *Component) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case referencesMsg:
 		c.references = []scraper.Reference(msg)
-		c.list = NewList(c.Props().Section, c.references)
+		c.list = l.NewReferencesList(c.Props().Section, c.references)
 		c.loading = false
 
 	case tea.WindowSizeMsg:
-		UpdateSize(&c.list, msg.Width, msg.Height)
+		l.UpdateSize(&c.list, msg.Width, msg.Height)
 
 	case tea.KeyMsg:
 		if c.list.SettingFilter() {
 			break
 		}
 
-		if key.Matches(msg, BackKey) {
+		if key.Matches(msg, l.BackKey) {
 			reactea.SetCurrentRoute("default")
 			return nil
 		}
