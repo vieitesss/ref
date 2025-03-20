@@ -6,8 +6,10 @@ import (
 	"github.com/vieitesss/ref/scraper"
 )
 
-const WIDTH = 20
-const HEIGHT = 50
+const (
+	MIN_HEIGHT = 8
+	MIN_WIDTH = 20
+)
 
 type item struct {
 	name string
@@ -33,15 +35,15 @@ func defaultDelegate() list.DefaultDelegate {
 	return del
 }
 
-func newList(items []list.Item, title string) list.Model {
-	l := list.New(items, defaultDelegate(), WIDTH, min(len(items)+7, HEIGHT))
+func newList(items []list.Item, title string, width, height int) list.Model {
+	l := list.New(items, defaultDelegate(), width, height)
 	l.KeyMap.ShowFullHelp.SetEnabled(false)
 	l.Title = title
 
 	return l
 }
 
-func NewSectionsList(title string, elems []scraper.Section) list.Model {
+func NewSectionsList(title string, elems []scraper.Section, width, height int) list.Model {
 	var items []list.Item
 	for _, e := range elems {
 		items = append(items, item{name: string(e)})
@@ -49,37 +51,37 @@ func NewSectionsList(title string, elems []scraper.Section) list.Model {
 
 	current_route = "default"
 
-	return newList(items, title)
+	return newList(items, title, width, height)
 }
 
 func customBindings() []key.Binding {
 	return []key.Binding{BackKey}
 }
 
-func NewReferencesList(title string, elems []scraper.Reference) list.Model {
+func NewReferencesList(title string, elems []scraper.Reference, width, height int) list.Model {
 	var items []list.Item
 	for _, e := range elems {
 		items = append(items, item{name: string(e)})
 	}
 
-	l := newList(items, title)
+	l := newList(items, title, width, height)
 	l.AdditionalShortHelpKeys = customBindings
 
 	return l
 }
 
-func NewCheatsheetList(title string, elems []string) list.Model {
+func NewCheatsheetList(title string, elems []string, width, height int) list.Model {
 	var items []list.Item
 	for _, e := range elems {
 		items = append(items, item{name: e})
 	}
 
-	l := newList(items, title)
+	l := newList(items, title, width, height)
 	l.AdditionalShortHelpKeys = customBindings
 
 	return l
 }
 
 func UpdateSize(l *list.Model, width, height int) {
-	l.SetSize(width, min(len(l.Items())+7, height))
+	l.SetSize(width, height)
 }
