@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/vieitesss/ref/scraper"
 )
 
 //go:embed file.md
@@ -47,8 +48,11 @@ func (s SnippetsPage) Init() tea.Cmd {
 	return tea.WindowSize()
 }
 
-func getText() tea.Msg {
-	return snippetsMsg(in)
+func getText(reference, title string) tea.Cmd {
+	return func() tea.Msg {
+		in := scraper.GetSnippets(reference, title)
+		return snippetsMsg(in)
+	}
 }
 
 func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -63,7 +67,7 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if s.loading {
 			v := viewport.New(width, height)
 			s.viewport = v
-			return s, getText
+			return s, getText(s.reference, s.title)
 		} else {
 			s.viewport.Height = height
 			s.viewport.Width = width

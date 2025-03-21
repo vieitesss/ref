@@ -73,3 +73,33 @@ func GetCheatSheet(reference string) []string {
 
 	return cheatTitles
 }
+
+func GetSnippets(reference, title string) string {
+
+	var text string
+
+	Scrapper().OnHTML("h2", func(e *colly.HTMLElement) {
+		if !strings.Contains(e.Text, title) {
+			return
+		}
+
+		list := e.DOM.SiblingsFiltered(".h3-wrap-list").First()
+		h3s := list.Find(".h3-wrap").EachIter()
+
+		for _, h := range h3s {
+			sec := h.ChildrenFiltered("div.section").First()
+
+			for _, c := range sec.Children().EachIter() {
+				switch c.Get(0).Data {
+				case "pre":
+					text += ParseCode(reference, strings.TrimSpace(c.Text()))
+					text += "\n-----\n"
+				}
+			}
+		}
+	})
+
+	Scrapper().Visit(fmt.Sprintf("https://quickref.me/%s", reference))
+
+	return text
+}
