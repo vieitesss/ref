@@ -51,12 +51,12 @@ func (r ReferencesPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case referencesMsg:
 		r.references = []scraper.Reference(msg)
-		r.list = l.NewReferencesList(r.section, r.references, width, height)
+		r.list = l.NewReferencesList(r.section, r.references, width, height-2)
 		r.loading = false
 
 	case tea.WindowSizeMsg:
 		if !r.loading {
-			l.UpdateSize(&r.list, msg.Width, msg.Height)
+			l.UpdateSize(&r.list, msg.Width, msg.Height-2)
 		}
 
 	case tea.KeyMsg:

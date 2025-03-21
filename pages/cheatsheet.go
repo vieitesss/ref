@@ -16,7 +16,6 @@ type CheatsheetProps struct {
 }
 
 type CheatsheetPageMsg CheatsheetProps
-
 type titleMsg []string
 
 type CheatsheetPage struct {
@@ -54,18 +53,29 @@ func (c CheatsheetPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case titleMsg:
 		c.titles = []string(msg)
-		c.list = l.NewCheatsheetList("bash", c.titles, width, height)
+		c.list = l.NewCheatsheetList("bash", c.titles, width, height-2)
 		c.loading = false
 
 	case tea.WindowSizeMsg:
 		if !c.loading {
-			l.UpdateSize(&c.list, width, height)
+			l.UpdateSize(&c.list, width, height-2)
 		}
 
 	case tea.KeyMsg:
 		if key.Matches(msg, l.BackKey) {
 			return c, func() tea.Msg {
 				return ReferencesPageMsg(c.section)
+			}
+		}
+
+		if msg.Type == tea.KeyEnter {
+			selected := c.list.SelectedItem().FilterValue()
+			return c, func() tea.Msg {
+				return SnippetsPageMsg(SnippetsProps{
+					section: c.section,
+					reference: c.reference,
+					title: selected,
+				})
 			}
 		}
 	}

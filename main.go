@@ -6,7 +6,11 @@ import (
 )
 
 func main() {
-	program := tea.NewProgram(pages.NewMainPage(), tea.WithAltScreen())
+	program := tea.NewProgram(
+		pages.NewMainPage(),
+		tea.WithAltScreen(),
+		tea.WithMouseCellMotion(),
+	)
 
 	if _, err := program.Run(); err != nil {
 		panic(err)

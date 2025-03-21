@@ -64,7 +64,8 @@ func GetCheatSheet(reference string) []string {
 	var cheatTitles []string
 
 	Scrapper().OnHTML(".h2-wrap", func(e *colly.HTMLElement) {
-		title := e.DOM.ChildrenFiltered("h2").Text()
+		hash_title := e.DOM.ChildrenFiltered("h2").Text()
+		title := strings.Replace(hash_title, "#", "", 1)
 		cheatTitles = append(cheatTitles, title)
 	})
 

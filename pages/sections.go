@@ -52,12 +52,12 @@ func (s SectionPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case sectionsMsg:
 		s.sections = []scraper.Section(msg)
-		s.list = l.NewSectionsList("Sections", s.sections, width, height)
+		s.list = l.NewSectionsList("Sections", s.sections, width, height-2)
 		s.loading = false
 
 	case tea.WindowSizeMsg:
 		if !s.loading {
-			l.UpdateSize(&s.list, msg.Width, msg.Height)
+			l.UpdateSize(&s.list, msg.Width, msg.Height-2)
 		}
 
 	case tea.KeyMsg:
