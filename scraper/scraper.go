@@ -104,6 +104,8 @@ func GetSnippets(reference, title string) string {
 					text += ParseH4(node)
 				case "p":
 					text += ParseP(node)
+				case "table":
+					text += ParseTable(reference, node)
 				}
 
 				text += "\n"
