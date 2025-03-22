@@ -83,18 +83,30 @@ func GetSnippets(reference, title string) string {
 			return
 		}
 
+		text += ParseH2(e.DOM.Get(0))
+
 		list := e.DOM.SiblingsFiltered(".h3-wrap-list").First()
 		h3s := list.Find(".h3-wrap").EachIter()
 
 		for _, h := range h3s {
-			sec := h.ChildrenFiltered("div.section").First()
+			// Section title
+			h3 := h.ChildrenFiltered("h3").Get(0)
+			text += fmt.Sprintf("%s\n", ParseH3(h3))
 
+			// Section content
+			sec := h.ChildrenFiltered("div.section").First()
 			for _, c := range sec.Children().EachIter() {
-				switch c.Get(0).Data {
+				node := c.Get(0)
+				switch node.Data {
 				case "pre":
-					text += ParseCode(reference, strings.TrimSpace(c.Text()))
-					text += "\n-----\n"
+					text += ParsePre(reference, node)
+				case "h4":
+					text += ParseH4(node)
+				case "p":
+					text += ParseP(node)
 				}
+
+				text += "\n"
 			}
 		}
 	})
