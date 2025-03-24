@@ -53,7 +53,7 @@ func (c CheatsheetPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case titleMsg:
 		c.titles = []string(msg)
-		c.list = l.NewCheatsheetList("bash", c.titles, width, height-2)
+		c.list = l.NewCheatsheetList(c.reference, c.titles, width, height-2)
 		c.loading = false
 
 	case tea.WindowSizeMsg:
@@ -72,9 +72,9 @@ func (c CheatsheetPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := c.list.SelectedItem().FilterValue()
 			return c, func() tea.Msg {
 				return SnippetsPageMsg(SnippetsProps{
-					section: c.section,
+					section:   c.section,
 					reference: c.reference,
-					title: selected,
+					title:     selected,
 				})
 			}
 		}

@@ -8,7 +8,7 @@ import (
 
 const (
 	MIN_HEIGHT = 8
-	MIN_WIDTH = 20
+	MIN_WIDTH  = 20
 )
 
 type item struct {

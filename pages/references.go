@@ -74,7 +74,7 @@ func (r ReferencesPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := r.list.SelectedItem().FilterValue()
 			return r, func() tea.Msg {
 				return CheatsheetPageMsg(CheatsheetProps{
-					section: r.section,
+					section:   r.section,
 					reference: selected,
 				})
 			}
