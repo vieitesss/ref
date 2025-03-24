@@ -8,13 +8,17 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
-func getAllText(h *html.Node) string {
+func getAllText(h *html.Node, inTable bool) string {
 	var text string
 
 	for c := range h.Descendants() {
 		if c.Type == html.TextNode {
 			text += c.Data
 		}
+	}
+
+	if inTable {
+		text = strings.Replace(text, "|", "\\|", -1)
 	}
 
 	return text
@@ -42,22 +46,41 @@ func ParseA(a *html.Node) string {
 		}
 	}
 
-	text := getAllText(a)
+	text := getAllText(a, false)
 
 	return fmt.Sprintf("[%s](%s)", text, link)
 }
 
-func parseCodeInline(code *html.Node) string {
-	return fmt.Sprintf("`%s`", getAllText(code))
+func parseYel(yel *html.Node, inTable bool) string {
+	return fmt.Sprintf("**%s**", getAllText(yel, inTable))
 }
 
-func parseCode(lang string, code *html.Node) string {
-	return fmt.Sprintf("```%s\n%s\n```", lang, getAllText(code))
+func parseCodeInline(code *html.Node, inTable bool) string {
+	return fmt.Sprintf("`%s`", getAllText(code, inTable))
+}
+
+func parseSpan(span *html.Node) string {
+	var text string
+
+	for c := range span.ChildNodes() {
+		switch {
+		case c.Type == html.TextNode:
+			text += c.Data
+		case c.Type == html.ElementNode:
+			text += parseSpan(c)
+		}
+	}
+
+	return text
+}
+
+func parseCode(lang string, code *html.Node, inTable bool) string {
+	return fmt.Sprintf("```%s\n%s\n```", lang, getAllText(code, inTable))
 }
 
 func ParsePre(lang string, pre *html.Node) string {
 	code := pre.LastChild
-	text := fmt.Sprintf("%s\n", parseCode(lang, code))
+	text := fmt.Sprintf("%s\n", parseCode(lang, code, false))
 	return text
 }
 
@@ -121,7 +144,9 @@ func parseTd(lang string, td *html.Node) string {
 	for c := range td.ChildNodes() {
 		if c.Type == html.ElementNode {
 			if c.DataAtom == atom.Code {
-				text += parseCodeInline(c)
+				text += parseCodeInline(c, true)
+			} else if c.Data == "yel" {
+				text += parseYel(c, true)
 			}
 		} else if c.Type == html.TextNode {
 			text += c.Data
@@ -137,7 +162,7 @@ func parseTr(lang string, tr *html.Node) string {
 	for col := range tr.ChildNodes() {
 		if col.Type == html.ElementNode {
 			if col.DataAtom == atom.Th {
-				text += fmt.Sprintf("%s|", getAllText(col))
+				text += fmt.Sprintf("%s|", getAllText(col, true))
 			} else if col.DataAtom == atom.Td {
 				text += fmt.Sprintf("%s|", parseTd(lang, col))
 			}
