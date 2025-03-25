@@ -8,34 +8,7 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
-func getAllText(h *html.Node, inTable bool) string {
-	var text string
-
-	for c := range h.Descendants() {
-		if c.Type == html.TextNode {
-			text += c.Data
-		}
-	}
-
-	if inTable {
-		text = strings.Replace(text, "|", "\\|", -1)
-	}
-
-	return text
-}
-
-func getFirstLevelText(h *html.Node) string {
-	var text string
-
-	for c := range h.ChildNodes() {
-		if c.Type == html.TextNode {
-			text += c.Data
-		}
-	}
-
-	return text
-}
-
+// Inline elements
 func ParseA(a *html.Node) string {
 	var link string
 
@@ -46,17 +19,23 @@ func ParseA(a *html.Node) string {
 		}
 	}
 
-	text := getAllText(a, false)
+	text := GetAllText(a)
 
 	return fmt.Sprintf("[%s](%s)", text, link)
 }
 
-func parseYel(yel *html.Node, inTable bool) string {
-	return fmt.Sprintf("**%s**", getAllText(yel, inTable))
+func parseYel(yel *html.Node) string {
+	return fmt.Sprintf("**%s**", GetAllText(yel))
+}
+
+func parseStrong(strong *html.Node) string {
+	text := parseYel(strong)
+
+	return text
 }
 
 func parseCodeInline(code *html.Node, inTable bool) string {
-	return fmt.Sprintf("`%s`", getAllText(code, inTable))
+	return fmt.Sprintf("`%s`", GetAllText(code))
 }
 
 func parseSpan(span *html.Node) string {
@@ -74,33 +53,34 @@ func parseSpan(span *html.Node) string {
 	return text
 }
 
-func parseCode(lang string, code *html.Node, inTable bool) string {
-	return fmt.Sprintf("```%s\n%s\n```", lang, getAllText(code, inTable))
+func parseCode(lang string, code *html.Node) string {
+	return fmt.Sprintf("```%s\n%s\n```", lang, GetAllText(code))
 }
 
+// Block elements
 func ParsePre(lang string, pre *html.Node) string {
 	code := pre.LastChild
-	text := fmt.Sprintf("%s\n", parseCode(lang, code, false))
+	text := fmt.Sprintf("%s\n", parseCode(lang, code))
 	return text
 }
 
 func ParseH1(h1 *html.Node) string {
-	parsed := getFirstLevelText(h1)
+	parsed := GetFirstLevelText(h1)
 	return fmt.Sprintf("# %s\n", parsed)
 }
 
 func ParseH2(h2 *html.Node) string {
-	parsed := getFirstLevelText(h2)
+	parsed := GetFirstLevelText(h2)
 	return fmt.Sprintf("## %s\n", parsed)
 }
 
 func ParseH3(h3 *html.Node) string {
-	parsed := getFirstLevelText(h3)
+	parsed := GetFirstLevelText(h3)
 	return fmt.Sprintf("### %s\n", parsed)
 }
 
 func ParseH4(h4 *html.Node) string {
-	parsed := getFirstLevelText(h4)
+	parsed := GetFirstLevelText(h4)
 	return fmt.Sprintf("#### %s\n", parsed)
 }
 
@@ -108,34 +88,22 @@ func ParseP(p *html.Node) string {
 	var text string
 
 	for c := range p.ChildNodes() {
-		if c.Type == html.ElementNode && c.DataAtom == atom.A {
-			text += ParseA(c)
-		} else if c.Type == html.TextNode {
+		switch {
+		case c.Type == html.TextNode:
 			text += c.Data
+
+		case c.Type == html.ElementNode:
+			switch c.DataAtom {
+			case atom.A:
+				text += ParseA(c)
+
+			case atom.Strong:
+				text += parseStrong(c)
+			}
 		}
 	}
 
 	return fmt.Sprintf("%s\n", text)
-}
-
-func getTHeadColumns(thead *html.Node) int {
-	var tr *html.Node
-	var columns int
-
-	for c := range thead.ChildNodes() {
-		if c.Type == html.ElementNode && c.DataAtom == atom.Tr {
-			tr = c
-			break
-		}
-	}
-
-	for th := range tr.ChildNodes() {
-		if th.Type == html.ElementNode && th.DataAtom == atom.Th {
-			columns += 1
-		}
-	}
-
-	return columns
 }
 
 func parseTd(lang string, td *html.Node) string {
@@ -146,7 +114,7 @@ func parseTd(lang string, td *html.Node) string {
 			if c.DataAtom == atom.Code {
 				text += parseCodeInline(c, true)
 			} else if c.Data == "yel" {
-				text += parseYel(c, true)
+				text += parseYel(c)
 			}
 		} else if c.Type == html.TextNode {
 			text += c.Data
@@ -162,7 +130,7 @@ func parseTr(lang string, tr *html.Node) string {
 	for col := range tr.ChildNodes() {
 		if col.Type == html.ElementNode {
 			if col.DataAtom == atom.Th {
-				text += fmt.Sprintf("%s|", getAllText(col, true))
+				text += fmt.Sprintf("%s|", GetAllText(col))
 			} else if col.DataAtom == atom.Td {
 				text += fmt.Sprintf("%s|", parseTd(lang, col))
 			}
@@ -200,7 +168,7 @@ func ParseTable(lang string, table *html.Node) string {
 		}
 	}
 
-	columns := getTHeadColumns(thead)
+	columns := GetTHeadColumns(thead)
 
 	text += parseTHeadTBody(lang, thead)
 	text += fmt.Sprintf("%s|\n", strings.Repeat("|---", columns))
