@@ -176,3 +176,41 @@ func ParseTable(lang string, table *html.Node) string {
 
 	return text
 }
+
+func parseLi(lang string, li *html.Node) string {
+	var text string
+
+	for c := range li.ChildNodes() {
+		switch {
+		case c.Type == html.TextNode:
+			text += c.Data
+
+		case c.Type == html.ElementNode:
+			switch c.DataAtom {
+			case atom.Strong:
+				text += fmt.Sprintf("%s\n", parseStrong(c))
+
+			case atom.Pre:
+				text += ParsePre(lang, c)
+
+			case atom.P:
+				text += ParseP(c)
+			}
+		}
+	}
+
+	return fmt.Sprintf("- %s\n", text)
+}
+
+func ParseUl(lang string, ul *html.Node) string {
+	var text string
+
+	for c := range ul.ChildNodes() {
+		switch {
+		case c.Type == html.ElementNode && c.DataAtom == atom.Li:
+			text += parseLi(lang, c)
+		}
+	}
+
+	return text
+}

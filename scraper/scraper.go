@@ -75,7 +75,6 @@ func GetCheatSheet(reference string) []string {
 }
 
 func GetSnippets(reference, title string) string {
-
 	var text string
 
 	Scrapper().OnHTML("h2", func(e *colly.HTMLElement) {
@@ -106,6 +105,8 @@ func GetSnippets(reference, title string) string {
 					text += ParseP(node)
 				case "table":
 					text += ParseTable(reference, node)
+				case "ul":
+					text += ParseUl(reference, node)
 				}
 
 				text += "\n"
