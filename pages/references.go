@@ -98,5 +98,5 @@ func (r ReferencesPage) View() string {
 		return spinnerStyle.Height(height).Width(width).Render(content)
 	}
 
-	return docStyle.Render(r.list.View())
+	return docStyle.Width(width).Render(r.list.View())
 }

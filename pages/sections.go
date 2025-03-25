@@ -90,5 +90,5 @@ func (c SectionPage) View() string {
 		return spinnerStyle.Height(height).Width(width).Render(content)
 	}
 
-	return docStyle.Render(c.list.View())
+	return docStyle.Width(width).Render(c.list.View())
 }

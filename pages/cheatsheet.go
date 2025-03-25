@@ -62,6 +62,10 @@ func (c CheatsheetPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
+		if c.list.SettingFilter() {
+			break
+		}
+
 		if key.Matches(msg, l.BackKey) {
 			return c, func() tea.Msg {
 				return ReferencesPageMsg(c.section)
@@ -97,5 +101,5 @@ func (c CheatsheetPage) View() string {
 		return spinnerStyle.Height(height).Width(width).Render(content)
 	}
 
-	return docStyle.Render(c.list.View())
+	return docStyle.Width(width).Render(c.list.View())
 }

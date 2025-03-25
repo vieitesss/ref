@@ -157,12 +157,10 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s SnippetsPage) View() string {
 	h := lipgloss.NewStyle().
 		Margin(1, 2).
-		Width(width).
 		Align(lipgloss.Left).
 		Render(s.help.View(s.keys))
 
 	vp := lipgloss.NewStyle().
-		Width(width).
 		Align(lipgloss.Top).
 		Render(s.viewport.View())
 
