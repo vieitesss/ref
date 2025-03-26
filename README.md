@@ -18,9 +18,10 @@ A web scrapper of [quickref.me](https://quickref.me) built in Go.
 ## Prerequisites
 
 - Go installed (v1.24.1)
-1. Clone this repository.
 
 ## Installation and execution
+
+1. Clone this repository.
 
 ```sh
 git clone https://github.com/vieitesss/ref ~/ref
