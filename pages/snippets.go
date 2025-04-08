@@ -62,12 +62,14 @@ type keyMap struct {
 }
 
 type SnippetsPage struct {
-	loading                   bool
-	spinner                   spinner.Model
-	keys                      keyMap
-	help                      help.Model
-	viewport                  viewport.Model
-	section, reference, title string
+	loading   bool
+	spinner   spinner.Model
+	keys      keyMap
+	help      help.Model
+	viewport  viewport.Model
+	section   string
+	reference string
+	title     string
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -120,12 +122,13 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.help.Width = width
 
 		if s.loading {
-			v := viewport.New(width, height)
+			v := viewport.New(width-1, height-1)
 			s.viewport = v
+			s.viewport.Style.Border(lipgloss.InnerHalfBlockBorder())
 			return s, getText(s.reference, s.title)
 		} else {
-			s.viewport.Height = height
-			s.viewport.Width = width
+			s.viewport.Height = height - 1
+			s.viewport.Width = width - 1
 		}
 
 	case tea.KeyMsg:
@@ -143,9 +146,12 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case snippetsMsg:
 		s.loading = false
-		out, _ := glamour.Render(string(msg), "dracula")
+		r, _ := glamour.NewTermRenderer(
+			glamour.WithStandardStyle("dracula"),
+		)
+		out, _ := r.Render(string(msg))
 		s.viewport.SetContent(out)
-		return s, nil
+		return s, tea.WindowSize()
 	}
 
 	s.viewport, cmd = s.viewport.Update(msg)
@@ -164,5 +170,5 @@ func (s SnippetsPage) View() string {
 		Align(lipgloss.Top).
 		Render(s.viewport.View())
 
-	return lipgloss.JoinVertical(lipgloss.Top, vp, h)
+	return lipgloss.JoinVertical(0, vp, h)
 }
