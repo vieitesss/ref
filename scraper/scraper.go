@@ -75,6 +75,7 @@ func GetCheatSheet(reference string) []string {
 }
 
 func GetSnippets(reference, title string) string {
+	var sb strings.Builder
 	var text string
 
 	Scrapper().OnHTML("h2", func(e *colly.HTMLElement) {
@@ -82,7 +83,7 @@ func GetSnippets(reference, title string) string {
 			return
 		}
 
-		text += ParseH2(e.DOM.Get(0))
+		sb.Write([]byte(ParseH2(e.DOM.Get(0))))
 
 		list := e.DOM.SiblingsFiltered(".h3-wrap-list").First()
 		h3s := list.Find(".h3-wrap").EachIter()
@@ -90,7 +91,7 @@ func GetSnippets(reference, title string) string {
 		for _, h := range h3s {
 			// Section title
 			h3 := h.ChildrenFiltered("h3").Get(0)
-			text += fmt.Sprintf("%s\n", ParseH3(h3))
+			sb.Write([]byte(fmt.Sprintf("%s\n", ParseH3(h3))))
 
 			// Section content
 			sec := h.ChildrenFiltered("div.section").First()
@@ -98,23 +99,25 @@ func GetSnippets(reference, title string) string {
 				node := c.Get(0)
 				switch node.Data {
 				case "pre":
-					text += ParsePre(reference, node)
+					sb.Write([]byte(ParsePre(reference, node)))
 				case "h4":
-					text += ParseH4(node)
+					sb.Write([]byte(ParseH4(node)))
 				case "p":
-					text += ParseP(node)
+					sb.Write([]byte(ParseP(node)))
 				case "table":
-					text += ParseTable(reference, node)
+					sb.Write([]byte(ParseTable(reference, node)))
 				case "ul":
-					text += ParseUl(reference, node)
+					sb.Write([]byte(ParseUl(reference, node)))
 				}
 
-				text += "\n"
+				sb.Write([]byte("\n"))
 			}
 		}
 	})
 
 	Scrapper().Visit(fmt.Sprintf("https://quickref.me/%s", reference))
+
+	text = AfterParse(sb.String())
 
 	return text
 }

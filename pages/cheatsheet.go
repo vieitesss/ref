@@ -97,7 +97,7 @@ func (c CheatsheetPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (c CheatsheetPage) View() string {
 	if c.loading {
-		content := fmt.Sprintf("%v Getting %s cheatsheet", c.spinner.View(), "Programming")
+		content := fmt.Sprintf("%v Getting %s cheatsheet", c.spinner.View(), c.reference)
 		return spinnerStyle.Height(height).Width(width).Render(content)
 	}
 

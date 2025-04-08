@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -39,21 +40,27 @@ func parseCodeInline(code *html.Node, inTable bool) string {
 }
 
 func parseSpan(span *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range span.ChildNodes() {
 		switch {
 		case c.Type == html.TextNode:
-			text += c.Data
+			sb.Write([]byte(c.Data))
 		case c.Type == html.ElementNode:
-			text += parseSpan(c)
+			sb.Write([]byte(parseSpan(c)))
 		}
 	}
 
-	return text
+	return sb.String()
 }
 
 func parseCode(lang string, code *html.Node) string {
+	text := GetAllText(code)
+
+	if match, _ := regexp.Match(`^\s*\n*$`, []byte(text)); match {
+		return "\n"
+	}
+
 	return fmt.Sprintf("```%s\n%s\n```", lang, GetAllText(code))
 }
 
@@ -85,77 +92,79 @@ func ParseH4(h4 *html.Node) string {
 }
 
 func ParseP(p *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range p.ChildNodes() {
 		switch {
 		case c.Type == html.TextNode:
-			text += c.Data
+			sb.Write([]byte(c.Data))
 
 		case c.Type == html.ElementNode:
 			switch c.DataAtom {
 			case atom.A:
-				text += ParseA(c)
+				sb.Write([]byte(ParseA(c)))
 
 			case atom.Strong:
-				text += parseStrong(c)
+				sb.Write([]byte(parseStrong(c)))
 			}
 		}
 	}
 
-	return fmt.Sprintf("%s\n", text)
+	return fmt.Sprintf("%s\n", sb.String())
 }
 
 func parseTd(lang string, td *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range td.ChildNodes() {
 		if c.Type == html.ElementNode {
 			if c.DataAtom == atom.Code {
-				text += parseCodeInline(c, true)
+				sb.Write([]byte(parseCodeInline(c, true)))
 			} else if c.Data == "yel" {
-				text += parseYel(c)
+				sb.Write([]byte(parseYel(c)))
 			}
 		} else if c.Type == html.TextNode {
-			text += c.Data
+			sb.Write([]byte(c.Data))
 		}
 	}
 
-	return text
+	return sb.String()
 }
 
 func parseTr(lang string, tr *html.Node) string {
-	text := "|"
+	var sb strings.Builder
+
+	sb.Write([]byte("|"))
 
 	for col := range tr.ChildNodes() {
 		if col.Type == html.ElementNode {
 			if col.DataAtom == atom.Th {
-				text += fmt.Sprintf("%s|", GetAllText(col))
+				sb.Write([]byte(fmt.Sprintf("%s|", GetAllText(col))))
 			} else if col.DataAtom == atom.Td {
-				text += fmt.Sprintf("%s|", parseTd(lang, col))
+				sb.Write([]byte(fmt.Sprintf("%s|", parseTd(lang, col))))
 			}
 		}
 	}
 
-	text += "\n"
+	sb.Write([]byte("\n"))
 
-	return text
+	return sb.String()
 }
 
 func parseTHeadTBody(lang string, thb *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range thb.ChildNodes() {
 		if c.Type == html.ElementNode && c.DataAtom == atom.Tr {
-			text += parseTr(lang, c)
+			sb.Write([]byte(parseTr(lang, c)))
 		}
 	}
 
-	return text
+	return sb.String()
 }
 
 func ParseTable(lang string, table *html.Node) string {
-	var text string
+	var sb strings.Builder
 	var thead, tbody *html.Node
 
 	for c := range table.ChildNodes() {
@@ -170,47 +179,47 @@ func ParseTable(lang string, table *html.Node) string {
 
 	columns := GetTHeadColumns(thead)
 
-	text += parseTHeadTBody(lang, thead)
-	text += fmt.Sprintf("%s|\n", strings.Repeat("|---", columns))
-	text += parseTHeadTBody(lang, tbody)
+	sb.Write([]byte(parseTHeadTBody(lang, thead)))
+	sb.Write([]byte(fmt.Sprintf("%s|\n", strings.Repeat("|---", columns))))
+	sb.Write([]byte(parseTHeadTBody(lang, tbody)))
 
-	return text
+	return sb.String()
 }
 
 func parseLi(lang string, li *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range li.ChildNodes() {
 		switch {
 		case c.Type == html.TextNode:
-			text += c.Data
+			sb.Write([]byte(c.Data))
 
 		case c.Type == html.ElementNode:
 			switch c.DataAtom {
 			case atom.Strong:
-				text += fmt.Sprintf("%s\n", parseStrong(c))
+				sb.Write([]byte(fmt.Sprintf("%s\n", parseStrong(c))))
 
 			case atom.Pre:
-				text += ParsePre(lang, c)
+				sb.Write([]byte(ParsePre(lang, c)))
 
 			case atom.P:
-				text += ParseP(c)
+				sb.Write([]byte(ParseP(c)))
 			}
 		}
 	}
 
-	return fmt.Sprintf("- %s\n", text)
+	return fmt.Sprintf("- %s\n", sb.String())
 }
 
 func ParseUl(lang string, ul *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range ul.ChildNodes() {
 		switch {
 		case c.Type == html.ElementNode && c.DataAtom == atom.Li:
-			text += parseLi(lang, c)
+			sb.Write([]byte(parseLi(lang, c)))
 		}
 	}
 
-	return text
+	return sb.String()
 }

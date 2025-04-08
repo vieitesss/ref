@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -8,14 +9,15 @@ import (
 )
 
 func GetAllText(h *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range h.Descendants() {
 		if c.Type == html.TextNode {
-			text += c.Data
+			sb.Write([]byte(c.Data))
 		}
 	}
 
+	text := sb.String()
 	text = strings.Replace(text, "|", "\\|", -1)
 	text = strings.Replace(text, "*", "\\*", -1)
 
@@ -23,15 +25,15 @@ func GetAllText(h *html.Node) string {
 }
 
 func GetFirstLevelText(h *html.Node) string {
-	var text string
+	var sb strings.Builder
 
 	for c := range h.ChildNodes() {
 		if c.Type == html.TextNode {
-			text += c.Data
+			sb.Write([]byte(c.Data))
 		}
 	}
 
-	return text
+	return sb.String()
 }
 
 func GetTHeadColumns(thead *html.Node) int {
@@ -47,9 +49,15 @@ func GetTHeadColumns(thead *html.Node) int {
 
 	for th := range tr.ChildNodes() {
 		if th.Type == html.ElementNode && th.DataAtom == atom.Th {
-			columns += 1
+			columns++
 		}
 	}
 
 	return columns
+}
+
+func AfterParse(text string) string {
+	reg := regexp.MustCompile(`(?s)(\n\s*){3,}`)
+
+	return reg.ReplaceAllString(text, "\n\n")
 }
