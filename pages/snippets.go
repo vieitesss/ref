@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -103,11 +105,16 @@ func (s SnippetsPage) Init() tea.Cmd {
 	return tea.WindowSize()
 }
 
-func getText(reference, title string) tea.Cmd {
+func getTextCmd(reference, title string) tea.Cmd {
 	return func() tea.Msg {
 		in := scraper.GetSnippets(reference, title)
 		return snippetsMsg(in)
 	}
+}
+
+func setViewportSize(v *viewport.Model, w, h int) {
+	v.Width = w - 5
+	v.Height = h - 5
 }
 
 func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -122,13 +129,12 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.help.Width = width
 
 		if s.loading {
-			v := viewport.New(width-1, height-1)
+			v := viewport.New(width, height)
+			setViewportSize(&v, width, height)
 			s.viewport = v
-			s.viewport.Style.Border(lipgloss.InnerHalfBlockBorder())
-			return s, getText(s.reference, s.title)
+			return s, getTextCmd(s.reference, s.title)
 		} else {
-			s.viewport.Height = height - 1
-			s.viewport.Width = width - 1
+			setViewportSize(&s.viewport, width, height)
 		}
 
 	case tea.KeyMsg:
@@ -161,14 +167,30 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s SnippetsPage) View() string {
-	h := lipgloss.NewStyle().
-		Margin(1, 2).
-		Align(lipgloss.Left).
-		Render(s.help.View(s.keys))
-
 	vp := lipgloss.NewStyle().
 		Align(lipgloss.Top).
+		Border(lipgloss.RoundedBorder()).
 		Render(s.viewport.View())
 
-	return lipgloss.JoinVertical(0, vp, h)
+	per := lipgloss.NewStyle().
+		AlignHorizontal(lipgloss.Right).
+		Width(lipgloss.Width(vp))
+
+	var percentage string
+
+	switch {
+	case s.viewport.AtBottom():
+		percentage = "At bottom"
+	case s.viewport.AtTop():
+		percentage = "At top"
+	default:
+		percentage = fmt.Sprintf("%.0f%%", s.viewport.ScrollPercent() * 100)
+	}
+
+	h := lipgloss.NewStyle().
+		Margin(0, 2).
+		Align(lipgloss.Bottom).
+		Render(s.help.View(s.keys))
+
+	return lipgloss.JoinVertical(0, vp, per.Render(percentage), h)
 }
