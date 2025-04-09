@@ -2,6 +2,7 @@ package pages
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -113,8 +114,8 @@ func getTextCmd(reference, title string) tea.Cmd {
 }
 
 func setViewportSize(v *viewport.Model, w, h int) {
-	v.Width = w - 5
-	v.Height = h - 5
+	v.Width = w - 4
+	v.Height = h - 4
 }
 
 func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -170,11 +171,8 @@ func (s SnippetsPage) View() string {
 	vp := lipgloss.NewStyle().
 		Align(lipgloss.Top).
 		Border(lipgloss.RoundedBorder()).
+		BorderBottom(false).
 		Render(s.viewport.View())
-
-	per := lipgloss.NewStyle().
-		AlignHorizontal(lipgloss.Right).
-		Width(lipgloss.Width(vp))
 
 	var percentage string
 
@@ -184,7 +182,7 @@ func (s SnippetsPage) View() string {
 	case s.viewport.AtTop():
 		percentage = "At top"
 	default:
-		percentage = fmt.Sprintf("%.0f%%", s.viewport.ScrollPercent() * 100)
+		percentage = fmt.Sprintf("%.0f%%", s.viewport.ScrollPercent()*100)
 	}
 
 	h := lipgloss.NewStyle().
@@ -192,5 +190,20 @@ func (s SnippetsPage) View() string {
 		Align(lipgloss.Bottom).
 		Render(s.help.View(s.keys))
 
-	return lipgloss.JoinVertical(0, vp, per.Render(percentage), h)
+	vpWidth := lipgloss.Width(vp)
+
+	// Has always 2 due to the border
+	if vpWidth < 3 {
+		return lipgloss.JoinVertical(0, vp, h)
+	}
+
+	per := lipgloss.NewStyle().
+		Width(vpWidth).
+		Render(fmt.Sprintf("%s%s %s",
+			lipgloss.RoundedBorder().BottomLeft,
+			strings.Repeat(lipgloss.RoundedBorder().Top, vpWidth-2-len(percentage)),
+			percentage,
+		))
+
+	return lipgloss.JoinVertical(0, vp, per, h)
 }
