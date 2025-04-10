@@ -1,8 +1,8 @@
 package list
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/list"
 	"github.com/vieitesss/ref/scraper"
 )
 
