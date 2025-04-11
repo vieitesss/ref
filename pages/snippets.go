@@ -168,6 +168,20 @@ func (s SnippetsPage) Update(msg tea.Msg) (PageModel, tea.Cmd) {
 }
 
 func (s SnippetsPage) View() string {
+	var sections []string
+	vpWidth := s.viewport.Width() + 2
+
+	title := fmt.Sprintf("%s - %s", s.reference, s.title)
+	topBar := lipgloss.NewStyle().
+		Width(vpWidth).
+		Render(fmt.Sprintf("%s %s %s%s",
+			lipgloss.RoundedBorder().TopLeft,
+			title,
+			strings.Repeat(lipgloss.RoundedBorder().Top, max(vpWidth-4-len(title), 0)),
+			lipgloss.RoundedBorder().TopRight,
+		))
+
+	sections = append(sections, topBar)
 
 	vp := lipgloss.NewStyle().
 		Align(lipgloss.Top).
@@ -175,6 +189,8 @@ func (s SnippetsPage) View() string {
 		BorderBottom(false).
 		BorderTop(false).
 		Render(s.viewport.View())
+
+	sections = append(sections, vp)
 
 	var percentage string
 
@@ -187,36 +203,23 @@ func (s SnippetsPage) View() string {
 		percentage = fmt.Sprintf("%.0f%%", s.viewport.ScrollPercent()*100)
 	}
 
+	bottomBar := lipgloss.NewStyle().
+		Width(vpWidth).
+		Render(fmt.Sprintf("%s%s %s %s",
+			lipgloss.RoundedBorder().BottomLeft,
+			strings.Repeat(lipgloss.RoundedBorder().Top, max(vpWidth-4-len(percentage), 0)),
+			percentage,
+			lipgloss.RoundedBorder().BottomRight,
+		))
+
+	sections = append(sections, bottomBar)
+
 	h := lipgloss.NewStyle().
 		Margin(0, 2).
 		Align(lipgloss.Bottom).
 		Render(s.help.View(s.keys))
 
-	vpWidth := lipgloss.Width(vp)
+	sections = append(sections, h)
 
-	// Has always 2 due to the border
-	if vpWidth < 3 {
-		return lipgloss.JoinVertical(0, vp, h)
-	}
-
-	title := fmt.Sprintf("%s - %s", s.reference, s.title)
-	topBar := lipgloss.NewStyle().
-		Width(vpWidth).
-		Render(fmt.Sprintf("%s %s %s%s",
-			lipgloss.RoundedBorder().TopLeft,
-			title,
-			strings.Repeat(lipgloss.RoundedBorder().Top, vpWidth-4-len(title)),
-			lipgloss.RoundedBorder().TopRight,
-		))
-
-	bottomBar := lipgloss.NewStyle().
-		Width(vpWidth).
-		Render(fmt.Sprintf("%s%s %s %s",
-			lipgloss.RoundedBorder().BottomLeft,
-			strings.Repeat(lipgloss.RoundedBorder().Top, vpWidth-4-len(percentage)),
-			percentage,
-			lipgloss.RoundedBorder().BottomRight,
-		))
-
-	return lipgloss.JoinVertical(0, topBar, vp, bottomBar, h)
+	return lipgloss.JoinVertical(0, sections...)
 }
