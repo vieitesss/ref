@@ -12,11 +12,17 @@ var (
 	docStyle     = lipgloss.NewStyle().AlignVertical(lipgloss.Top).Margin(1, 0, 0, 1)
 )
 
-type MainPage struct {
-	currentPage tea.Model
+type PageModel interface {
+	Init() tea.Cmd
+	Update(tea.Msg) (PageModel, tea.Cmd)
+	View() string
 }
 
-func NewMainPage() MainPage {
+type MainPage struct {
+	currentPage PageModel
+}
+
+func NewMainPage() tea.Model {
 	return MainPage{
 		currentPage: NewSectionPage(),
 	}
@@ -34,7 +40,7 @@ func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.Type == tea.KeyCtrlC {
+		if msg.Key().Text == "ctrl+c" {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:

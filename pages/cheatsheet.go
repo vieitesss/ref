@@ -46,7 +46,7 @@ func (c CheatsheetPage) Init() tea.Cmd {
 	}
 }
 
-func (c CheatsheetPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (c CheatsheetPage) Update(msg tea.Msg) (PageModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
@@ -72,7 +72,7 @@ func (c CheatsheetPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		if msg.Type == tea.KeyEnter {
+		if msg.Key().Code == tea.KeyEnter {
 			selected := c.list.SelectedItem().FilterValue()
 			return c, func() tea.Msg {
 				return SnippetsPageMsg(SnippetsProps{

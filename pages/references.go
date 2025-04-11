@@ -44,7 +44,7 @@ func NewReferencesPage(section string) ReferencesPage {
 	}
 }
 
-func (r ReferencesPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (r ReferencesPage) Update(msg tea.Msg) (PageModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
@@ -70,7 +70,7 @@ func (r ReferencesPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		if msg.Type == tea.KeyEnter {
+		if msg.Key().Code == tea.KeyEnter {
 			selected := r.list.SelectedItem().FilterValue()
 			return r, func() tea.Msg {
 				return CheatsheetPageMsg(CheatsheetProps{

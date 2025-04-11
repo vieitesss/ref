@@ -45,7 +45,7 @@ func (s SectionPage) Init() tea.Cmd {
 	return getSectionsCmd
 }
 
-func (s SectionPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s SectionPage) Update(msg tea.Msg) (PageModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
@@ -65,7 +65,7 @@ func (s SectionPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
-		if msg.Type == tea.KeyEnter {
+		if msg.Key().Code == tea.KeyEnter {
 			selected := s.list.SelectedItem().FilterValue()
 			return s, func() tea.Msg {
 				return ReferencesPageMsg(selected)

@@ -103,7 +103,7 @@ func NewSnippetsPage(p SnippetsProps) SnippetsPage {
 }
 
 func (s SnippetsPage) Init() tea.Cmd {
-	return tea.WindowSize()
+	return tea.RequestWindowSize
 }
 
 func getTextCmd(reference, title string) tea.Cmd {
@@ -114,11 +114,11 @@ func getTextCmd(reference, title string) tea.Cmd {
 }
 
 func setViewportSize(v *viewport.Model, w, h int) {
-	v.Width = w - 4
-	v.Height = h - 4
+	v.SetWidth(w - 4)
+	v.SetHeight(h - 4)
 }
 
-func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s SnippetsPage) Update(msg tea.Msg) (PageModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
@@ -130,7 +130,7 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.help.Width = width
 
 		if s.loading {
-			v := viewport.New(width, height)
+			v := viewport.New()
 			setViewportSize(&v, width, height)
 			s.viewport = v
 			return s, getTextCmd(s.reference, s.title)
@@ -158,7 +158,7 @@ func (s SnippetsPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		)
 		out, _ := r.Render(string(msg))
 		s.viewport.SetContent(out)
-		return s, tea.WindowSize()
+		return s, tea.RequestWindowSize
 	}
 
 	s.viewport, cmd = s.viewport.Update(msg)
