@@ -168,10 +168,12 @@ func (s SnippetsPage) Update(msg tea.Msg) (PageModel, tea.Cmd) {
 }
 
 func (s SnippetsPage) View() string {
+
 	vp := lipgloss.NewStyle().
 		Align(lipgloss.Top).
 		Border(lipgloss.RoundedBorder()).
 		BorderBottom(false).
+		BorderTop(false).
 		Render(s.viewport.View())
 
 	var percentage string
@@ -197,13 +199,24 @@ func (s SnippetsPage) View() string {
 		return lipgloss.JoinVertical(0, vp, h)
 	}
 
-	per := lipgloss.NewStyle().
+	title := fmt.Sprintf("%s - %s", s.reference, s.title)
+	topBar := lipgloss.NewStyle().
 		Width(vpWidth).
-		Render(fmt.Sprintf("%s%s %s",
-			lipgloss.RoundedBorder().BottomLeft,
-			strings.Repeat(lipgloss.RoundedBorder().Top, vpWidth-2-len(percentage)),
-			percentage,
+		Render(fmt.Sprintf("%s %s %s%s",
+			lipgloss.RoundedBorder().TopLeft,
+			title,
+			strings.Repeat(lipgloss.RoundedBorder().Top, vpWidth-4-len(title)),
+			lipgloss.RoundedBorder().TopRight,
 		))
 
-	return lipgloss.JoinVertical(0, vp, per, h)
+	bottomBar := lipgloss.NewStyle().
+		Width(vpWidth).
+		Render(fmt.Sprintf("%s%s %s %s",
+			lipgloss.RoundedBorder().BottomLeft,
+			strings.Repeat(lipgloss.RoundedBorder().Top, vpWidth-4-len(percentage)),
+			percentage,
+			lipgloss.RoundedBorder().BottomRight,
+		))
+
+	return lipgloss.JoinVertical(0, topBar, vp, bottomBar, h)
 }
