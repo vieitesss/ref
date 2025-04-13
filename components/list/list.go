@@ -6,11 +6,6 @@ import (
 	"github.com/vieitesss/ref/scraper"
 )
 
-const (
-	MIN_HEIGHT = 8
-	MIN_WIDTH  = 20
-)
-
 type item struct {
 	name string
 }
@@ -36,7 +31,8 @@ func defaultDelegate() list.DefaultDelegate {
 }
 
 func newList(items []list.Item, title string, width, height int) list.Model {
-	l := list.New(items, defaultDelegate(), width, height)
+	listSize := len(items)
+	l := list.New(items, defaultDelegate(), width, min(getHeightForList(listSize), height))
 	l.KeyMap.ShowFullHelp.SetEnabled(false)
 	l.Title = title
 
@@ -48,8 +44,6 @@ func NewSectionsList(title string, elems []scraper.Section, width, height int) l
 	for _, e := range elems {
 		items = append(items, item{name: string(e)})
 	}
-
-	current_route = "default"
 
 	return newList(items, title, width, height)
 }
@@ -82,6 +76,12 @@ func NewCheatsheetList(title string, elems []string, width, height int) list.Mod
 	return l
 }
 
-func UpdateSize(l *list.Model, width, height int) {
-	l.SetSize(width, height)
+func UpdateSize(l *list.Model, height int) {
+	listSize := len(l.Items())
+	h := min(getHeightForList(listSize), height)
+	l.SetHeight(h)
+}
+
+func getHeightForList(listSize int) int {
+	return listSize + 8
 }

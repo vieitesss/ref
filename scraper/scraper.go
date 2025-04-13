@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gocolly/colly"
+	colly "github.com/gocolly/colly/v2"
 )
 
 type Section string
@@ -27,16 +27,21 @@ func Scrapper() *colly.Collector {
 	return c
 }
 
-func GetSections() []Section {
+func GetSections() ([]Section, error) {
 	var sections []Section
+	var err error
 
 	Scrapper().OnHTML("h2.font-medium", func(e *colly.HTMLElement) {
 		sections = append(sections, Section(e.Text))
 	})
 
+	Scrapper().OnError(func (r *colly.Response, e error) {
+		err = e
+	})
+
 	Scrapper().Visit("https://quickref.me")
 
-	return sections
+	return sections, err
 }
 
 func GetSectionReferences(section string) []Reference {
