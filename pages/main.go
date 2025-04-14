@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/v2/key"
 	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/key"
 	"github.com/charmbracelet/bubbles/v2/list"
 	"github.com/charmbracelet/bubbles/v2/spinner"
 	"github.com/charmbracelet/bubbles/v2/viewport"
@@ -67,13 +67,17 @@ func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		if key.Matches(msg, m.keys.Help) {
 			m.help.ShowAll = !m.help.ShowAll
-			
+			m.updateViewportSize()
+
 			return m, nil
 		}
 	}
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if m.list.FilterState() == list.Filtering {
+			break
+		}
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
@@ -109,7 +113,11 @@ func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		width = msg.Width
 		height = msg.Height
-		if len(m.list.Items()) > 0 {
+
+		switch {
+		case m.page == Snippets:
+			m.updateViewportSize()
+		case len(m.list.Items()) > 0:
 			l.UpdateSize(&m.list, height)
 		}
 
@@ -136,9 +144,9 @@ func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case showSnippetsMsg:
 		m.loading = false
 
-		v := viewport.New()
-		setViewportSize(&v, width, height)
-		m.viewport = v
+		m.viewport = viewport.New()
+		m.viewport.FillHeight = false
+		m.updateViewportSize()
 
 		m.help = help.New()
 		m.keys = keys
@@ -198,35 +206,32 @@ func (m MainPage) loadingText() string {
 	return pageConfigs[m.page].LoadingText(m)
 }
 
-func setViewportSize(v *viewport.Model, w, h int) {
-	v.SetWidth(w - 4)
-	v.SetHeight(h - 4)
+func (m *MainPage) updateViewportSize() {
+	// width = (terminal - borders) width
+	m.viewport.SetWidth(width - 2)
+
+	// height = (terminal - help - top and bottom bars) height
+	actualHeight := height - lipgloss.Height(m.help.View(m.keys)) - 2
+	m.viewport.SetHeight(actualHeight)
 }
 
 func (m MainPage) viewSnippets() string {
 	var sections []string
-	vpWidth := m.viewport.Width() + 2
+
+	h := lipgloss.NewStyle().
+		Margin(0, 2).
+		Align(lipgloss.Bottom).
+		Render(m.help.View(m.keys))
 
 	title := pageConfigs[Snippets].Title(m)
 	topBar := lipgloss.NewStyle().
-		Width(vpWidth).
+		Width(width).
 		Render(fmt.Sprintf("%s %s %s%s",
 			lipgloss.RoundedBorder().TopLeft,
 			title,
-			strings.Repeat(lipgloss.RoundedBorder().Top, max(vpWidth-4-len(title), 0)),
+			strings.Repeat(lipgloss.RoundedBorder().Top, max(width-4-len(title), 0)),
 			lipgloss.RoundedBorder().TopRight,
 		))
-
-	sections = append(sections, topBar)
-
-	vp := lipgloss.NewStyle().
-		Align(lipgloss.Top).
-		Border(lipgloss.RoundedBorder()).
-		BorderBottom(false).
-		BorderTop(false).
-		Render(m.viewport.View())
-
-	sections = append(sections, vp)
 
 	var percentage string
 
@@ -240,21 +245,24 @@ func (m MainPage) viewSnippets() string {
 	}
 
 	bottomBar := lipgloss.NewStyle().
-		Width(vpWidth).
+		Width(width).
 		Render(fmt.Sprintf("%s%s %s %s",
 			lipgloss.RoundedBorder().BottomLeft,
-			strings.Repeat(lipgloss.RoundedBorder().Top, max(vpWidth-4-len(percentage), 0)),
+			strings.Repeat(lipgloss.RoundedBorder().Top, max(width-4-len(percentage), 0)),
 			percentage,
 			lipgloss.RoundedBorder().BottomRight,
 		))
 
+	vp := lipgloss.NewStyle().
+		Align(lipgloss.Top).
+		Border(lipgloss.RoundedBorder()).
+		BorderBottom(false).
+		BorderTop(false).
+		Render(m.viewport.View())
+
+	sections = append(sections, topBar)
+	sections = append(sections, vp)
 	sections = append(sections, bottomBar)
-
-	h := lipgloss.NewStyle().
-		Margin(0, 2).
-		Align(lipgloss.Bottom).
-		Render(m.help.View(m.keys))
-
 	sections = append(sections, h)
 
 	return lipgloss.JoinVertical(0, sections...)
