@@ -3,7 +3,7 @@
 A web scrapper of [quickref.me](https://quickref.me) built in Go.
 
 
-| ref | quickref.me |
+| <div style="width:290px">ref</div>| quickref.me |
 | --- | ----------- |
 | ![references](./assets/references.png) | ![references qrm](./assets/references_qrm.png) |
 | ![bash cheatsheet](./assets/bash.png) | ![bash qrm](./assets/bash_qrm.png) |
