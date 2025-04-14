@@ -1,9 +1,9 @@
-package list
+package ui
 
 import (
 	"github.com/charmbracelet/bubbles/v2/key"
 	"github.com/charmbracelet/bubbles/v2/list"
-	"github.com/vieitesss/ref/scraper"
+	"github.com/vieitesss/ref/pkg/scraper"
 )
 
 type item struct {

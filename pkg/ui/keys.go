@@ -1,4 +1,4 @@
-package pages
+package ui
 
 import "github.com/charmbracelet/bubbles/v2/key"
 

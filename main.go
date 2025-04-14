@@ -2,12 +2,12 @@ package main
 
 import (
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/vieitesss/ref/pages"
+	"github.com/vieitesss/ref/pkg/ui"
 )
 
 func main() {
 	program := tea.NewProgram(
-		pages.NewMainPage(),
+		ui.NewMainPage(),
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),
 	)
