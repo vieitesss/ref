@@ -10,7 +10,7 @@ A web scrapper of [quickref.me](https://quickref.me) built in Go.
 
 
 > [!NOTE]
-> This project is not fully finished, but should be 90% usable.
+> I'm done with this project, if any issue, I'm open to PRs' proposals.
 
 
 # How to try
