@@ -89,7 +89,7 @@ func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loading = false
 		m.setViewport(msg)
 
-		return m, nil
+		return m, tea.RequestWindowSize
 	}
 
 	updates := m.updateComponents(msg)
